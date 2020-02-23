@@ -1,0 +1,3 @@
+C:/Users/mitsa/source/repos/MiniOpenGLGame/3rdparty/inc/glm/out/build/x64-Debug/CMakeFiles/glm_dummy.dir
+C:/Users/mitsa/source/repos/MiniOpenGLGame/3rdparty/inc/glm/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Users/mitsa/source/repos/MiniOpenGLGame/3rdparty/inc/glm/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
