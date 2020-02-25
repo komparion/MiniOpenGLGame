@@ -12,6 +12,9 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
+#include "FontManager.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 
 // RENDERER
@@ -42,6 +45,7 @@
  int SpawnedPirates = 0;
  int Emptied_Chests = 0;
  Mix_Music *gMusic = NULL;
+ FontManager gTTF;
   
   
 Renderer::Renderer()
@@ -157,9 +161,18 @@ bool Renderer::Init(int SCREEN_WIDTH, int SCREEN_HEIGHT)
 		printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
 		SDL_Mixer_initialization = false;
 	}
+
+	//Init FreeType
+	bool FT_initialization = true;
+	if (!FontManager::initFreeType())
+	{
+		printf("Unable to initialize FreeType!\n");
+		FT_initialization = false;
+	}
+
 	
 	//If everything initialized
-	return techniques_initialization && items_initialization && buffers_initialization 
+	return techniques_initialization && items_initialization && buffers_initialization && FT_initialization 
 		&& meshes_initialization && lights_sources_initialization && SDL_initialization && SDL_Mixer_initialization;
 }
 
@@ -209,6 +222,16 @@ void Renderer::Update(float dt)
 	m_geometric_greenplane_transformation_matrix = object_translation2 * object_scale2;
 	m_geometric_greenplane_transformation_normal_matrix = glm::mat4(glm::transpose(glm::inverse(glm::mat3(m_geometric_object2_transformation_matrix))));
 
+
+	//Clear color buffer
+	glClear(GL_COLOR_BUFFER_BIT);
+	glLoadIdentity();
+
+	//Render blue text
+	glColor3f(0.f, 0.f, 1.f);
+	gTTF.renderText(0.f, 0.f, "Now rendering with TTF!");
+
+
 	//m_skeleton_position.z += m_skeleton_movement.x * 0.001f;
 	//m_skeleton_position.x += m_skeleton_movement.y * 0.001f;
 	//glm::mat4 tran = glm::translate(glm::mat4(1.f), m_skeleton_position);
@@ -232,6 +255,7 @@ void Renderer::Update(float dt)
 			Pirates.push_back(Pir);
 			TimeSinceLastPirateSpawned = m_continous_time;
 			SpawnedPirates++;
+			
 		}
 		if (m_continous_time - TimeSinceLastPirateSpawned >= 20) {
 			wave++;
@@ -566,6 +590,15 @@ bool Renderer::InitGeometricMeshes()
 		printf("Failed to load music! SDL_mixer Error: %s\n", Mix_GetError());
 		initialized = false;
 	}
+
+	//Load font
+	if (!gTTF.loadFreeType("23_freetype_fonts/lazy.ttf", 60))
+	{
+		printf("Unable to load ttf font!\n");
+		initialized = false;
+	}
+
+
 	return initialized;
 }
 

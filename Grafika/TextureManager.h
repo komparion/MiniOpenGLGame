@@ -36,7 +36,6 @@ public:
 	// Request a texture handle
 	GLuint RequestTexture(const char* filename, bool hasMipmaps = false);
 
-protected:
 	TextureManager();	
 	void operator=(TextureManager const&);
 };
