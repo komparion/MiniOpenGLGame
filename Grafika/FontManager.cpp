@@ -138,11 +138,11 @@ bool FontManager::loadFreeType(std::string path, GLuint pixelSize)
 
             //Create bitmap font
             cellH = maxBearing - minHang;
-            createPixels8(cellW * 16, cellH * 16);
+            //createPixels8(cellW * 16, cellH * 16);
 
             //Begin creating bitmap font
             GLuint currentChar = 0;
-            LFRect nextClip = { 0.f, 0.f, cellW, cellH };
+           // LFRect nextClip = { 0.f, 0.f, cellW, cellH };
 
             //Blitting coordinates
             int bX = 0;
@@ -175,10 +175,10 @@ bool FontManager::loadFreeType(std::string path, GLuint pixelSize)
                     Then we add the clipping rectangle to sprite sheet and keep going through until all of the glyph images are blitted to the sprite sheet.*/
 
                     //Blit character
-                    bitmaps[currentChar].blitPixels8(bX, bY + maxBearing - metrics[currentChar].horiBearingY / 64, *this);
+                    //bitmaps[currentChar].blitPixels8(bX, bY + maxBearing - metrics[currentChar].horiBearingY / 64, *this);
 
                     //Go to the next character
-                    mClips.push_back(nextClip);
+                    //mClips.push_back(nextClip);
                     currentChar++;
                 }
             }
@@ -186,7 +186,7 @@ bool FontManager::loadFreeType(std::string path, GLuint pixelSize)
             //After all of the glyph images are blitted, we pad the pixels so the sprite sheet is a power of two. Then we load the texture and generate the VBO data
 
              //Make texture power of two
-            padPixels8();
+            //padPixels8();
 
             //Create texture
             if (loadTextureFromPixels8())
@@ -209,7 +209,7 @@ bool FontManager::loadFreeType(std::string path, GLuint pixelSize)
             After we're done with the font face, we free it using FT_Done_Face().*/
 
             //Set texture wrap
-            glBindTexture(GL_TEXTURE_2D, getTextureID());
+            //glBindTexture(GL_TEXTURE_2D, getTextureID());
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
@@ -241,6 +241,7 @@ bool FontManager::loadFreeType(std::string path, GLuint pixelSize)
 
     return error == NULL;
 }
+
 
 void FontManager::renderText(GLfloat x, GLfloat y, std::string text)
 {
@@ -307,5 +308,6 @@ void FontManager::renderText(GLfloat x, GLfloat y, std::string text)
         glDisableClientState(GL_VERTEX_ARRAY);
     }
 }
+
 
 

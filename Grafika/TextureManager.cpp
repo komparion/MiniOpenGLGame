@@ -1,6 +1,7 @@
 #include "TextureManager.h"
 #include <algorithm>
 #include "SDL2/SDL_image.h"
+#include "SDL2/SDL_ttf.h"
 
 // Texture
 TextureManager::TextureManager()
@@ -100,3 +101,62 @@ GLuint TextureManager::RequestTexture(const char* filename, bool hasMipmaps)
 	textures.push_back(container);
 	return container.textureID;
 }
+
+bool TextureManager::loadFromRenderedText(std::string textureText, SDL_Color textColor) {
+	
+	TTF_Font *gFont;
+	//free();
+
+	//Render text surface
+	SDL_Surface* textSurface = TTF_RenderText_Solid(gFont, textureText.c_str(), textColor);
+	if (textSurface == NULL)
+	{
+		printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
+	}
+	else
+	{
+		//Create texture from surface pixels
+		SDL_Renderer *gRenderer;
+		mTexture = SDL_CreateTextureFromSurface(gRenderer, textSurface);
+		if (mTexture == NULL)
+		{
+			printf("Unable to create texture from rendered text! SDL Error: %s\n", SDL_GetError());
+		}
+		else
+		{
+			//Get image dimensions
+			//mWidth = textSurface->w;
+			//mHeight = textSurface->h;
+		}
+
+		//Get rid of old surface
+		SDL_FreeSurface(textSurface);
+	}
+
+	//Return success
+	return mTexture != NULL;
+}
+
+/*void TextureManager::copyPixels8(GLubyte* pixels, GLuint imgWidth, GLuint imgHeight) {
+	//Pixels have valid dimensions
+	if (imgWidth > 0 && imgHeight > 0)
+	{
+		//Get rid of any current texture data
+		freeTexture();
+
+		//Copy pixels
+		GLuint size = imgWidth * imgHeight;
+		mPixels8 = new GLubyte[size];
+		memcpy(mPixels8, pixels, size);
+
+		//Copy pixel data
+		mImageWidth = imgWidth;
+		mImageHeight = imgHeight;
+		mTextureWidth = mImageWidth;
+		mTextureHeight = mImageWidth;
+
+		//Set pixel format
+		mPixelFormat = GL_ALPHA;
+	}
+}
+*/

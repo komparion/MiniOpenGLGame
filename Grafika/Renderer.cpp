@@ -13,6 +13,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include "FontManager.h"
+#include "TextureManager.h"
+#include "SDL2/SDL_ttf.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -170,9 +172,15 @@ bool Renderer::Init(int SCREEN_WIDTH, int SCREEN_HEIGHT)
 		FT_initialization = false;
 	}
 
-	
+	//Initialize SDL_ttf
+	bool SDL_TTF_initialization = true;
+	if (TTF_Init() == -1)
+	{
+		printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+		SDL_TTF_initialization = false;
+	}
 	//If everything initialized
-	return techniques_initialization && items_initialization && buffers_initialization && FT_initialization 
+	return techniques_initialization && items_initialization && buffers_initialization && FT_initialization && SDL_TTF_initialization
 		&& meshes_initialization && lights_sources_initialization && SDL_initialization && SDL_Mixer_initialization;
 }
 
@@ -327,6 +335,50 @@ bool Renderer::InitCommonItems()
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray(0);
+
+	//GLenum wrap_mode = GL_REPEAT;
+	//GLenum wrap_mode = GL_CLAMP_TO_BORDER;
+	GLenum wrap_mode = GL_CLAMP_TO_EDGE;
+	// query the maximum anisotropic value
+	GLint max_anisotropy = 1;
+	glGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_anisotropy);
+
+	// Generate Samplers
+
+	glGenSamplers(1, &m_nearest_sampler);
+	glSamplerParameteri(m_nearest_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glSamplerParameteri(m_nearest_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glSamplerParameteri(m_nearest_sampler, GL_TEXTURE_WRAP_S, wrap_mode);
+	glSamplerParameteri(m_nearest_sampler, GL_TEXTURE_WRAP_T, wrap_mode);
+	glGenSamplers(1, &m_linear_sampler);
+	glSamplerParameteri(m_linear_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glSamplerParameteri(m_linear_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glSamplerParameteri(m_linear_sampler, GL_TEXTURE_WRAP_S, wrap_mode);
+	glSamplerParameteri(m_linear_sampler, GL_TEXTURE_WRAP_T, wrap_mode);
+	glGenSamplers(1, &m_trilinear_sampler);
+	glSamplerParameteri(m_trilinear_sampler, GL_TEXTURE_WRAP_S, wrap_mode);
+	glSamplerParameteri(m_trilinear_sampler, GL_TEXTURE_WRAP_T, wrap_mode);
+	glSamplerParameteri(m_trilinear_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glSamplerParameteri(m_trilinear_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glSamplerParameteri(m_trilinear_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, max_anisotropy);
+
+	// Wrapping samplers
+	glGenSamplers(3, m_wrapping_samplers);
+	glSamplerParameteri(m_wrapping_samplers[0], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glSamplerParameteri(m_wrapping_samplers[0], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glSamplerParameteri(m_wrapping_samplers[0], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glSamplerParameteri(m_wrapping_samplers[0], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glSamplerParameteri(m_wrapping_samplers[0], GL_TEXTURE_MAX_ANISOTROPY_EXT, max_anisotropy);
+	glSamplerParameteri(m_wrapping_samplers[1], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(m_wrapping_samplers[1], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(m_wrapping_samplers[1], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glSamplerParameteri(m_wrapping_samplers[1], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glSamplerParameteri(m_wrapping_samplers[1], GL_TEXTURE_MAX_ANISOTROPY_EXT, max_anisotropy);
+	glSamplerParameteri(m_wrapping_samplers[2], GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glSamplerParameteri(m_wrapping_samplers[2], GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glSamplerParameteri(m_wrapping_samplers[2], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glSamplerParameteri(m_wrapping_samplers[2], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glSamplerParameteri(m_wrapping_samplers[2], GL_TEXTURE_MAX_ANISOTROPY_EXT, max_anisotropy);
 
 	return true;
 }
@@ -591,13 +643,29 @@ bool Renderer::InitGeometricMeshes()
 		initialized = false;
 	}
 
-	//Load font
+	/*//Load font
 	if (!gTTF.loadFreeType("23_freetype_fonts/lazy.ttf", 60))
 	{
 		printf("Unable to load ttf font!\n");
 		initialized = false;
+	}*/
+	//Open the font
+	TextureManager::GetInstance().gFont = TTF_OpenFont("16_true_type_fonts/lazy.ttf", 28);
+	if (gFont == NULL)
+	{
+		printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
+		success = false;
 	}
-
+	else
+	{
+		//Render text
+		SDL_Color textColor = { 0, 0, 0 };
+		if (!gTextTexture.loadFromRenderedText("The quick brown fox jumps over the lazy dog", textColor))
+		{
+			printf("Failed to render text texture!\n");
+			success = false;
+		}
+	}
 
 	return initialized;
 }

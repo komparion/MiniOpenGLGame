@@ -35,7 +35,8 @@ protected:
 	GLuint m_fbo;
 	GLuint m_fbo_depth_texture;
 	GLuint m_fbo_texture;
-	
+	GLuint m_nearest_sampler, m_linear_sampler, m_trilinear_sampler;
+	GLuint m_wrapping_samplers[3];
 	GLuint m_vao_fbo, m_vbo_fbo_vertices;
 
 	float m_continous_time;
